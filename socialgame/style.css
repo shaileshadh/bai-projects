@@ -1,0 +1,96 @@
+body {
+	font: 11pt arial;
+	color: #222;
+	margin:0;
+	padding:0;
+}
+/* Used for headers. Substitute for <h1> */
+.bigtitle {
+	margin: 0;
+	padding: 0;
+	font-size: 20pt;
+	border-bottom: 2px solid rgb(136,0,21);
+	font-family: arial;
+	font-weight: bold;
+}
+a.button {
+	display: block;
+	background: url(buttonnormal.jpg);
+	text-decoration: none;
+	color: #000;
+	padding: 7px 0 7px 7px;
+	border: 1px solid #484;
+	font-size: 18pt;
+}
+a.button:hover {
+	background: url(buttondown.jpg);
+}
+.window {
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	margin: auto;
+	padding: 5px;
+	border: 2px groove #555;
+	background: url(windowbg.png);
+}
+.invisible {
+	display: none;
+}
+#selector {
+	position: absolute;
+	bottom: 20px;
+	left: 20px;
+	width: 60%;
+}
+.narrative {
+	margin: 10px;
+	margin-top: 20px;
+	border: groove #000 2px;
+	padding: 5px;
+	width: 90%;
+	height: 70%;
+}
+#bgimage {
+	width: 100%;
+	height: 100%;
+	left: 0px;
+	top: 0px;
+	position: absolute;
+	z-index: 0;
+}
+#welcome {
+	width: 492px;
+	height: 330px;
+	margin-left: -246px;
+	margin-top: -165px;
+}
+#g1,#g2,#g3,#g4,#g5,#g6,#g7,#g8,#g9,#g10,#g11,#g12,#g13,#g14,#g15,#g16,#g17,#g18,#g19,#g20,#g21,#g22 {
+	width: 400px;
+	height: 300px;
+	margin-left: -200px;
+	margin-top: -150px;
+}
+#nextbtn {
+	position: absolute;
+	bottom: 5px;
+	right: 5px;
+}
+#nextbtn:hover {
+	border: solid 1px #444
+}
+#closebtn {
+	position: absolute;
+	top: 5px;
+	right: 5px;
+}
+#closebtn:hover {
+	border: solid 1px #444
+}
+.centimg{
+	display: block;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+
