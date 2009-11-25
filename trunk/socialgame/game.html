@@ -1,0 +1,348 @@
+<!--
+Social studies game.
+Tested on Google Chrome.
+Hooray for hand-coded HTML! :)
+-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+	<head>
+		<title>Stalin's Army - A Role-Playing Game by Bai Li</title>
+		<style type="text/css">@import 'style.css';</style>
+		<script type="text/javascript" src="gamelogic.js"></script>
+	</head>
+	<body>
+		<div id='bgimage'>
+			<img src="bground.jpg" style="height:100%; width:100%;" />
+		</div>
+		<!-- Start screen -->
+		<div class='window' id='welcome'>
+			<div id='title'>
+				<p class='bigtitle'> Stalin's Army </p>
+				<p style="text-align:right;"> by Bai Li </p>
+			</div>
+			<center>
+				<img src='hammersickle.png' style='width:100px; height:100px; padding-right:60px;'/> 
+				<img src='stalin.jpg' style='width:100px; height:100px;'/>
+				<br>
+				<div>
+					<div style="text-align:left; float:left; width: 55%; margin-top: 20px; margin-left: 10px;">
+						<span>
+This is a role playing game where you take on the role of the leader of the Soviet Union. Your choices will affect the future of your country.  The year is 1922. There are 8 possible endings, and over 20 possible plot paths. Good luck!
+						</span>
+					</div>
+					<div style="float: right;">
+						<a class='button' style="width:120px; margin-top:40px; margin-right: 70px; text-align:center;"
+							onclick="start()"> Play </a>
+					</div>
+					<div style="clear: both;" />
+				</div>
+			</center>
+		</div>
+		<!-- Main game screen -->
+		<div class='window invisible' id='g1'>
+			<img src='next.png' id='nextbtn' title='Submit' onclick="next()" />
+			<img src='close.png' id='closebtn' title='Return to main' onclick="exit()" />
+			<div class='narrative'>
+Your name is Joseph Stalin. It is September 1922. After a struggle for power against Leon Trotsky, you are now in control of the country. However, you have to make an important decision. Should Russia be made a socialist state, like before, or should it be made capitalist, following the success of the USA? It is your decision.
+			<img src='leninpic.jpg' width=128 height=100 class='centimg'/>
+			</div>
+			<div id='selector'>
+				<select id='s1' style="width: 100%;">
+					<option selected> Choose an option... </option>
+					<option> Go with socialism </option>
+					<option> Go with capitalism </option>
+				</select>
+			</div>
+		</div>
+		<div class='window invisible' id='g2'>
+			<img src='next.png' id='nextbtn' title='Submit' onclick="next()" />
+			<img src='close.png' id='closebtn' title='Return to main' onclick="exit()" />
+			<div class='narrative'>
+You have chosen to lead the country with communism. In the next year you rid the government of your competitors, especially Leon Trotsky. You are confident that you will lead the country well. It is now 1927. However, the New Economic Policy is clearly becoming a problem. Greedy peasants are hoarding supplies to drive up prices. Bring a communist, you have only once choice: to end the New Economic Policy.
+			</div>
+			<div id='selector'>
+				<select id='s2' style="width: 100%;">
+					<option selected> Choose an option... </option>
+					<option> End the NEP </option>
+				</select>
+			</div>
+		</div>
+		<div class='window invisible' id='g3'>
+			<img src='next.png' id='nextbtn' title='Submit' onclick="next()" />
+			<img src='close.png' id='closebtn' title='Return to main' onclick="exit()" />
+			<div class='narrative'>
+You have now discarded the New Economic Policy. In its place you have collective farms. In the next few years, various opposes rise up against you. You deal with them quickly and harshly. Your secret police make a number of arrests, and thousands of people are sent to the Gulag labor camps. However, Russia is behind many countries in technology. There is a plan to fix this by the use of five-year-plans. These will quickly boost your country’s economy, but at a cost. Quality of life will be drastically reduced during this time. Do you accept or decline the Five year plans?
+			</div>
+			<div id='selector'>
+				<select id='s3' style="width: 100%;">
+					<option selected> Choose an option... </option>
+					<option> Accept the Five Year Plans </option>
+					<option> Reject the Five Year Plans </option>
+				</select>
+			</div>
+		</div>
+		<div class='window invisible' id='g4'>
+			<img src='next.png' id='nextbtn' title='Submit' onclick="next()" />
+			<img src='close.png' id='closebtn' title='Return to main' onclick="exit()" />
+			<div class='narrative'>
+You have accepted the five-year-plans. For the next five years, huge advancements are made in heavy industry, communications, and transportation. You are still slightly behind Germany in technology. However, because of lack of attention to consumer goods, quality of life in your country deteriorates. People are unhappy. You are advised to develop upon consumer goods, but doing so will affect your industrial progress. What plan do you choose?
+			</div>
+			<div id='selector'>
+				<select id='s4' style="width: 100%;">
+					<option selected> Choose an option... </option>
+					<option> Develop in consumer goods </option>
+					<option> Develop in heavy industry </option>
+				</select>
+			</div>
+		</div>
+		<div class='window invisible' id='g5'>
+			<img src='next.png' id='nextbtn' title='Submit' onclick="next()" />
+			<img src='close.png' id='closebtn' title='Return to main' onclick="exit()" />
+			<div class='narrative'>
+You have rejected the five-year-plans, and continue to rule with a collective economy. Your nation is far behind Germany and the USA in technology. In 1935, a series of droughts hits Russia and the country is in a state of famine. Your advisors suggest that you readopt the New Economic Policy, as your current methods of collective farming are clearly not working. Do you accept this?
+			<img src='farmer.jpg' width=93 height=70 class='centimg'/>
+			</div>
+			<div id='selector'>
+				<select id='s5' style="width: 100%;">
+					<option selected> Choose an option... </option>
+					<option> Readopt the NEP </option>
+					<option> Don't readopt the NEP </option>
+				</select>
+			</div>
+		</div>
+		<div class='window invisible' id='g6'>
+			<img src='next.png' id='nextbtn' title='Submit' onclick="next()" />
+			<img src='close.png' id='closebtn' title='Return to main' onclick="exit()" />
+			<div class='narrative'>
+You readopt the New Economic Policy. Russia is now a mixed economy. Slowly, standards of living improve, while technology is still lagging behind and not developing as fast as it could be. It is 1939. Germany offers to side with you in World War 2. However, your industries are still well behind that of other countries. You are afraid that more powerful countries will destroy you in the war. Do you accept this offer?
+			<img src='flags.png' width=74 height=60 class='centimg'/>
+			</div>
+			<div id='selector'>
+				<select id='s6' style="width: 100%;">
+					<option selected> Choose an option... </option>
+					<option> Side with Germany </option>
+					<option> Don't side with Germany </option>
+				</select>
+			</div>
+		</div>
+		<div class='window invisible' id='g7'>
+			<img src='next.png' id='nextbtn' title='Submit' onclick="next()" />
+			<img src='close.png' id='closebtn' title='Return to main' onclick="exit()" />
+			<div class='narrative'>
+You insist on socialism and completely reject the re-adoption of the New Economic Policy. You continue with collective farming. Famine continues, and millions die. Two years later, peasants revolt. In 1938, a group of Ukrainian farmers manage to take over the government. You are quickly captured and executed under the new government.
+			<p style="font-weight:bold;">The end.</p>
+			</div>
+			<div id='selector'>
+				<select id='s7' style="width: 100%;">
+					<option> Game over </option>
+				</select>
+			</div>
+		</div>
+		<div class='window invisible' id='g8'>
+			<img src='next.png' id='nextbtn' title='Submit' onclick="next()" />
+			<img src='close.png' id='closebtn' title='Return to main' onclick="exit()" />
+			<div class='narrative'>
+You join forces with Nazi Germany in World War 2. However, your technology is not very advanced compared to those of other countries. In the course of the war, Germany is slowly pushed back. In 1944, you and Germany lose the war. As a result, your country is divided into many smaller fragments.
+			<p style="font-weight:bold;">The end.</p>
+			<img src='deadsoldier.jpg' width=69 height=60 class='centimg'/>
+			</div>
+			<div id='selector'>
+				<select id='s8' style="width: 100%;">
+					<option> Game over </option>
+				</select>
+			</div>
+		</div>
+		<div class='window invisible' id='g9'>
+			<img src='next.png' id='nextbtn' title='Submit' onclick="next()" />
+			<img src='close.png' id='closebtn' title='Return to main' onclick="exit()" />
+			<div class='narrative'>
+You refuse to join forces with Nazi Germany. In the course of the war, the Germans are slowly pushed back. In 1944, Germany loses the war. Being behind in technology and neutral, you do not play a major part in this war. You are not considered a threat to the world, but at least you do not suffer major losses during the war.
+			<img src='deadsoldier.jpg' width=69 height=60 class='centimg'/>
+			</div>
+			<div id='selector'>
+				<select id='s9' style="width: 100%;">
+					<option selected> Choose an option... </option>
+					<option> Continue... </option>
+				</select>
+			</div>
+		</div>
+		<div class='window invisible' id='g10'>
+			<img src='next.png' id='nextbtn' title='Submit' onclick="next()" />
+			<img src='close.png' id='closebtn' title='Return to main' onclick="exit()" />
+			<div class='narrative'>
+You choose to differ from Lenin’s state and start developing Russia to be a capitalist state. Although slowly at first, various industries grow in your country. Quality of life slowly but steadily increases. You expand upon the New Economic Policy started by Lenin. However, crops fail in the summer of 1929. Your country enters a Great Depression, along with much of the world, including the Americas. By now you are starting to doubt the effectiveness of capitalism. You have the option to continue with capitalism, or return to socialism.
+			</div>
+			<div id='selector'>
+				<select id='s10' style="width: 100%;">
+					<option selected> Choose an option... </option>
+					<option> Continue with capitalism </option>
+					<option> Return to socialism </option>
+				</select>
+			</div>
+		</div>
+		<div class='window invisible' id='g11'>
+			<img src='next.png' id='nextbtn' title='Submit' onclick="next()" />
+			<img src='close.png' id='closebtn' title='Return to main' onclick="exit()" />
+			<div class='narrative'>
+Despite the depression, you continue with capitalism. You end up with a large amount of debt. However, around the late 1930’s your country quickly rises out of the depression. Now your nation boasts one of the highest qualities of lives in the world. Your industries are comparable to those of the Americas. In 1939, war breaks out, and Britain offers to side with you in the war. Do you accept?
+			</div>
+			<div id='selector'>
+				<select id='s11' style="width: 100%;">
+					<option selected> Choose an option... </option>
+					<option> Side with the Allies </option>
+					<option> Don't side with the Allies </option>
+				</select>
+			</div>
+		</div>
+		<div class='window invisible' id='g12'>
+			<img src='next.png' id='nextbtn' title='Submit' onclick="next()" />
+			<img src='close.png' id='closebtn' title='Return to main' onclick="exit()" />
+			<div class='narrative'>
+After less than a decade of capitalism, you return to a mostly socialist mixed economy. It is 1931, and your country is still suffering a famine and in an economic depression. Attempts to improve the situation by collectivization merely worsen the situation. Being still a mixed economy, heavy taxes discourage innovation. Being an indecisive leader, you lose the election of 1936. You are no longer a leader.
+			<p style="font-weight:bold;">The end.</p>
+			</div>
+			<div id='selector'>
+				<select id='s12' style="width: 100%;">
+					<option> Game over </option>
+				</select>
+			</div>
+		</div>
+		<div class='window invisible' id='g13'>
+			<img src='next.png' id='nextbtn' title='Submit' onclick="next()" />
+			<img src='close.png' id='closebtn' title='Return to main' onclick="exit()" />
+			<div class='narrative'>
+You side with the Allies in World War 2. In the course of the war, Germany is slowly pushed back. With the combined industries of Russia and the USA, the allies win the war in 1944, with the capture of Berlin and Japan’s surrender.
+			<img src='deadsoldier.jpg' width=69 height=60 class='centimg'/>
+			</div>
+			<div id='selector'>
+				<select id='s13' style="width: 100%;">
+					<option selected> Choose an option... </option>
+					<option> Continue... </option>
+				</select>
+			</div>
+		</div>
+		<div class='window invisible' id='g14'>
+			<img src='next.png' id='nextbtn' title='Submit' onclick="next()" />
+			<img src='close.png' id='closebtn' title='Return to main' onclick="exit()" />
+			<div class='narrative'>
+You try to remain a neutral country in World War 2. However in 1941 Germany invades you. The Allies joins you to hold off the German invasion. With your advancements in technology, you are able to resist the Germans. The Germans are defeated in 1944. 
+			<img src='deadsoldier.jpg' width=69 height=60 class='centimg'/>
+			</div>
+			<div id='selector'>
+				<select id='s14' style="width: 100%;">
+					<option selected> Choose an option... </option>
+					<option> Continue... </option>
+				</select>
+			</div>
+		</div>
+		<div class='window invisible' id='g15'>
+			<img src='next.png' id='nextbtn' title='Submit' onclick="next()" />
+			<img src='close.png' id='closebtn' title='Return to main' onclick="exit()" />
+			<div class='narrative'>
+You choose to develop consumer goods instead of industry. As a result, the standard of living in your country improves. In 1939, war breaks out. Germany offers to join forces with you in the war. Your industries are comparable to Germany’s, but still behind those of the Americas. Do you accept this offer?
+			<img src='flags.png' width=123 height=100 class='centimg'/>
+			</div>
+			<div id='selector'>
+				<select id='s15' style="width: 100%;">
+					<option selected> Choose an option... </option>
+					<option> Join forces with Germany </option>
+					<option> Don't join forces with Germany </option>
+				</select>
+			</div>
+		</div>
+		<div class='window invisible' id='g16'>
+			<img src='next.png' id='nextbtn' title='Submit' onclick="next()" />
+			<img src='close.png' id='closebtn' title='Return to main' onclick="exit()" />
+			<div class='narrative'>
+You keep developing in the industries. Soon you exceed the USA in the industries, titlehough your standards of living are extremely low due to the continued lack of attention to the consumer industry. You develop nuclear weaponry in 1940, just after war breaks out. You must side either with the Allies or with the Axis.
+			<img src='flags.png' width=123 height=100 class='centimg'/>
+			</div>
+			<div id='selector'>
+				<select id='s16' style="width: 100%;">
+					<option selected> Choose an option... </option>
+					<option> Side with the Allies </option>
+					<option> Side with the Axis </option>
+				</select>
+			</div>
+		</div>
+		<div class='window invisible' id='g17'>
+			<img src='next.png' id='nextbtn' title='Submit' onclick="next()" />
+			<img src='close.png' id='closebtn' title='Return to main' onclick="exit()" />
+			<div class='narrative'>
+You side with the allies. Your industries and weaponry are the most advanced in the world. Just two years after the war starts, you drop two atom bombs in Japan, effectively ending the war in 1941. Not long after the war, a tension builds up between Russia, a socialist country, and the USA, a capitalist country. Both countries develop weapons technology at a very fast rate, and you stockpile a mass of 30,000 nuclear weapons, with the option to launch them all at once and destroy America. Do you do this?
+			</div>
+			<div id='selector'>
+				<select id='s17' style="width: 100%;">
+					<option selected> Choose an option... </option>
+					<option> Launch the missiles at America </option>
+					<option> Withhold the missiles </option>
+				</select>
+			</div>
+		</div>
+		<div class='window invisible' id='g18'>
+			<img src='next.png' id='nextbtn' title='Submit' onclick="next()" />
+			<img src='close.png' id='closebtn' title='Return to main' onclick="exit()" />
+			<div class='narrative'>
+You side with the Axis powers in World War 2. Having the most advanced weaponry and technology in the world, you drop atom bombs in the Canadian cities of Calgary and Edmonton, killing millions. The Allied powers promptly surrender. The United States and Canada is divided into several smaller countries, some under Japanese, and others under Soviet rule. Much of the world is now socialist.
+			<p style="font-weight:bold;">The end.</p>
+			</div>
+			<div id='selector'>
+				<select id='s18' style="width: 100%;">
+					<option> Game over </option>
+				</select>
+			</div>
+		</div>
+		<div class='window invisible' id='g19'>
+			<img src='next.png' id='nextbtn' title='Submit' onclick="next()" />
+			<img src='close.png' id='closebtn' title='Return to main' onclick="exit()" />
+			<div class='narrative'>
+It is now 1950, and the world is recovering from World War 2. In the next period, your country improves quickly in quality of life. Being a democracy and capitalist, you maintain good relations with the United States and the rest of the world. The world enjoys a long period of peace and cooperation.
+			<p style="font-weight:bold;">The end.</p>
+			</div>
+			<div id='selector'>
+				<select id='s19' style="width: 100%;">
+					<option> Game over </option>
+				</select>
+			</div>
+		</div>
+		<div class='window invisible' id='g20'>
+			<img src='next.png' id='nextbtn' title='Submit' onclick="next()" />
+			<img src='close.png' id='closebtn' title='Return to main' onclick="exit()" />
+			<div class='narrative'>
+After the war, Russia continues to have a relatively centrally-planned economy. In a few decades, it would have caught up with the rest of the world in technology. But you pass away long before then.
+			<p style="font-weight:bold;">The end.</p>
+			</div>
+			<div id='selector'>
+				<select id='s20' style="width: 100%;">
+					<option> Game over </option>
+				</select>
+			</div>
+		</div>
+		<div class='window invisible' id='g21'>
+			<img src='next.png' id='nextbtn' title='Submit' onclick="next()" />
+			<img src='close.png' id='closebtn' title='Return to main' onclick="exit()" />
+			<div class='narrative'>
+You launch your massive stockpiles of nuclear weaponry. In response, the United States launch their equally large stockpile of nuclear warheads at you. Mutually assured destruction ensues. Billions of people in the world die from the nuclear radioactive fallout. For the next few centuries, humanity will suffer. The radioactive effects will last for millions of years. You have destroyed the human race.
+			<p style="font-weight:bold;">The end.</p>
+			</div>
+			<div id='selector'>
+				<select id='s21' style="width: 100%;">
+					<option> Game over </option>
+				</select>
+			</div>
+		</div>
+		<div class='window invisible' id='g22'>
+			<img src='next.png' id='nextbtn' title='Submit' onclick="next()" />
+			<img src='close.png' id='closebtn' title='Return to main' onclick="exit()" />
+			<div class='narrative'>
+You withhold your nuclear weaponry, knowing that launching them will cause the destruction of the planet. Gradually, the tension between you and the United States dies down. Decades of peace and cooperation follow, titlehough you die of natural causes a few years later.
+			<p style="font-weight:bold;">The end.</p>
+			</div>
+			<div id='selector'>
+				<select id='s22' style="width: 100%;">
+					<option> Game over </option>
+				</select>
+			</div>
+		</div>
+	</body>
+</html>
