@@ -5,8 +5,11 @@ public class Click{
 	static int DURATION;
 	static int SLEEP;
 	static int[][] PRESETS = {
+		// Mode 0: Click 50 times.
 		{1, 50, 0, 50},
+		// Mode 1: Click for 10 seconds.
 		{2, 0, 10000, 50},
+		// Mode 2: Click for 30 seconds.
 		{2, 0, 30000, 50}
 	};
 	public static void main(String[] args) throws Throwable{
