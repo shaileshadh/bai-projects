@@ -1,0 +1,6 @@
+A system of linear inequalities:
+a+2b <= 12
+a+b >= 7
+200a+100b >= 1200
+Maximize 500a+300b
+Solve, and get (4,4).

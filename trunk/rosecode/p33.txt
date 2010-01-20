@@ -1,0 +1,2 @@
+Wolfram Alpha:
+solve 1773x + 1865y=1 over the integers

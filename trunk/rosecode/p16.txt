@@ -1,0 +1,14 @@
+Too lazy, did it on pen/paper.
+
+ K....XXXXXXXX..XX
+                 X.X.X.X....X
+                            .
+                            X
+                            X
+                           XX
+                           X
+                           .
+                           X
+                          GX
+
+You should get 64.
