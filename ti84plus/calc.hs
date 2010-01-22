@@ -1,24 +1,3 @@
-
-{--
-Usage:
-calc <file>
-runhaskell calc.hs <file>
-
-Compile:
-ghc --make -O2 calc.hs && del calc.hi calc.o
-
-This program converts standard PC text files to .8XP format to be viewed on a
-TI-83/84+ calculator. To view it, edit it like a basic program.
-
-It supports uppercase and lowercase characters, numbers, and most punctuation.
-See /examples for some examples of what it can be used for.
-
-Note that characters without a TI equivalent are replaced with a period '.'
-
-The file size is limited by the calculator's RAM, usually about 24k. Lowercase
-characters take up twice as much space as normal characters.
---}
-
 import qualified Data.ByteString as B
 import qualified Data.List as L
 import qualified Data.Char as C
@@ -49,8 +28,7 @@ reverseEncode k = [k .&. 0xFF, k `shiftR` 8]
 padZeroes :: [Int] -> [Int]
 padZeroes xs = xs ++ replicate (8-length xs) 0
 
-{--
-Explanation of the 8xp file format
+{- Explanation of the 8xp file format
 
 The first 11 bytes must contain "**TI83F", 1a, 0a, 0.
 Then the next 42 bytes can contain whatever you want. Here I filled it with 0's.
@@ -66,8 +44,7 @@ Then, 0 and 0. This is the version number.
 Put the length (again) + 2.
 Put the length (again). No +2 this time.
 Now dump the contents of the file. This should be in the TI encoding, not ASCII, of course.
-Finally, write the checksum. We're done.
---}
+Finally, write the checksum. We're done.  -}
 
 --n: prog name, must already be all uppercase, <= 8 length.
 --s: contents
@@ -83,11 +60,14 @@ encodeAll n s = map fromIntegral $ concat [map C.ord "**TI83F*",[0x1a,0x0a],repl
 --Make a file name suitable to be a program name
 adjustName :: String -> String
 adjustName s = map C.toUpper . take 8 . filter C.isAlphaNum .
-	dropWhile (not . C.isAlpha) $ takeWhile (/='.') s
+	dropWhile (not . C.isAlpha) . takeWhile (/='.') . flip drop s . last .
+	L.findIndices (`elem` "\\/") $ s
 	
 main = do
 	args <- getArgs
-	file <- readFile (head args)
-	let pname = adjustName (head args)
-	B.writeFile (pname ++ ".8xp") . B.pack $ encodeAll pname file
+	mapM_ process args where
+		process f = do
+			file <- readFile f
+			let pname = adjustName f
+			B.writeFile (pname ++ ".8xp") . B.pack $ encodeAll pname file
 
