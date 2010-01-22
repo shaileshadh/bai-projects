@@ -1,0 +1,5 @@
+e=mc^2
+x=(-b+-sqrt(b^2-4ac))/2a
+a/sinA=b/sinB=c/sinC
+a^2+b^2=c^2
+c^2=a^2+b^2-2ab*cosC
