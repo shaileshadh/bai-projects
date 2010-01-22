@@ -1,0 +1,185 @@
+Haskell (programming language)
+From Wikipedia, the free encyclopedia
+
+This article may require cleanup to meet Wikipedia's quality standards. Please improve this article if you can. (December 2009)
+Haskell
+
+Usual file extensions	.hs, .lhs
+Paradigm	functional, non-strict, modular
+Appeared in	1990
+Designed by	Simon Peyton Jones, Paul Hudak[1], Philip Wadler, et al.
+Typing discipline	static, strong, inferred
+Major implementations	GHC, Hugs, NHC, JHC, Yhc
+Dialects	Helium, Gofer
+Influenced by	Lisp and Scheme, ISWIM, FP, APL, Hope and Hope+, SISAL, Miranda, ML and Standard ML, Lazy ML, Orwell, Alfl, Id, Ponder
+Influenced	Agda, Bluespec, Clojure, C#, CAL, Cat, Cayenne, Clean, Curry, Epigram, Escher, F#, Factor, Isabelle, Java Generics, LINQ, Mercury, Omega, Perl 6, Python, Qi, Scala, Timber, Visual Basic 9.0
+OS	portable
+Website	haskell.org
+Haskell (pronounced ['hæsk?l][2][3]) is a standardized, general-purpose purely functional programming language, with non-strict semantics and strong static typing. It is named after logician Haskell Curry.
+Contents [hide]
+1 History
+1.1 Consensus for an open standard
+2 Overview and distinguishing features
+3 Features
+3.1 Syntax
+3.1.1 Layout
+3.2 The rest of the syntax
+3.3 Algebraic data types
+3.3.1 Pattern matching
+3.3.2 Tuples
+3.4 Type system
+3.5 Monads and input/output
+3.5.1 ST monad
+3.5.2 STM monad
+3.5.3 Arrows
+3.6 Concurrency and parallelism
+3.6.1 Concurrency
+3.6.2 Parallelism
+3.7 Programming in the large
+3.8 Semantics
+3.9 Extensions to Haskell
+3.9.1 Type system extensions
+4 Examples
+4.1 Factorial
+4.2 More complex examples
+5 Implementations
+6 Tools
+7 Distribution
+7.1 Hackage
+7.2 Cabal
+7.3 The Haskell Platform
+8 Libraries
+9 Applications
+9.1 Open source applications
+9.1.1 Development
+9.1.2 Databases
+9.1.3 Games
+9.1.4 Graphics
+9.1.5 Languages and compilers
+9.1.6 System tools
+9.1.7 Text processing
+9.1.8 Networking
+9.1.9 Office tools
+9.2 Commercial applications
+9.3 Research projects
+10 Community
+11 Related languages
+12 Haskell variants
+13 Criticism
+14 Haskell conferences and workshops
+15 References
+16 External links
+16.1 Tutorials
+[edit]History
+
+[edit]Consensus for an open standard
+Following the release of Miranda by Research Software Ltd, in 1985, interest in lazy functional languages grew: by 1987, more than a dozen non-strict, purely functional programming languages existed. Of these, Miranda was the most widely used, but was not in the public domain. At the conference on Functional Programming Languages and Computer Architecture (FPCA '87) in Portland, Oregon, a meeting was held during which participants formed a strong consensus that a committee should be formed to define an open standard for such languages. The committee's purpose was to consolidate the existing functional languages into a common one that would serve as a basis for future research in functional-language design.[4] The first version of Haskell ("Haskell 1.0") was defined in 1990.[5] The committee's efforts resulted in a series of language definitions. In late 1997, the series culminated in Haskell 98, intended to specify a stable, minimal, portable version of the language and an accompanying standard library for teaching, and as a base for future extensions. The committee expressly welcomed the creation of extensions and variants of Haskell 98 via adding and incorporating experimental features.[4]
+In February 1999, the Haskell 98 language standard was originally published as "The Haskell 98 Report".[4] In January 2003, a revised version was published as "Haskell 98 Language and Libraries: The Revised Report".[6] The language continues to evolve rapidly, with the Glasgow Haskell Compiler (GHC) implementation representing the current de facto standard.
+In early 2006, the process of defining a successor to the Haskell 98 standard, informally named Haskell' ("Haskell Prime"), was begun.[7] This is an ongoing incremental process to revise the language definition, producing a new revision once per year. The first revision, named Haskell 2010, was announced in November 2009.[8]
+[edit]Overview and distinguishing features
+
+Haskell is a purely functional language, which means that in general, functions in Haskell do not have side effects. There is a distinct type for representing side effects, orthogonal to the type of functions. A pure function may return a side effect which is subsequently executed, modeling the impure functions of other languages.
+Haskell has a non-strict semantics. Most implementations of Haskell use lazy evaluation.
+Haskell has a strong, static, type system based on Hindley-Milner type inference. Haskell's principal innovation in this area is to add type classes, which were originally conceived as a principled way to add overloading to the language,[9] but have since found many more uses[10].
+The type which represents side effects is an example of a monad. Monads are a general framework which can model different kinds of computation, including error handling, nondeterminism, parsing, and software transactional memory. Monads are defined as ordinary datatypes, but Haskell provides some syntactic sugar for their use.
+The language has an open, published, specification,[6] and multiple implementations exist.
+There is an active community around the language, and more than 1700 third-party open-source libraries and tools are available in the online package repository Hackage.[11]
+The main implementation of Haskell, GHC, is both an interpreter and native-code compiler that runs on most platforms. GHC is noted for its high-performance implementation of concurrency and parallelism,[12] and for having a rich type system incorporating recent innovations such as generalized algebraic data types and Type Families.
+[edit]Features
+
+
+This article may be too long to read and navigate comfortably. Please consider splitting content into sub-articles and using this article for a summary of the key points of the subject. (December 2009)
+[edit]Syntax
+	This section requires expansion.
+[edit]Layout
+Haskell allows indentation to be used to indicate the beginning of a new declaration. For example, in a where clause:
+product xs = prod xs 1
+  where
+    prod []     a = a
+    prod (x:xs) a = prod xs (a*x)
+The two equations for the nested function prod are aligned vertically, which allows the semi-colon separator to be omitted. In Haskell, indentation can be used in several syntactic constructs, including do, let, case, class, and instance.
+The use of indentation to indicate program structure originates in Landin's ISWIM language, where it was called the off-side rule. This was later adopted by Miranda, and Haskell adopted a similar (but rather more complicated) version of Miranda's off-side rule, which it called "layout". Other languages to adopt whitespace-sensitive syntax include Python and F#.
+The use of layout in Haskell is optional. For example, the function product above can also be written:
+product xs = prod xs 1
+  where { prod [] a = a; prod (x:xs) a = prod xs (a*x) }
+The explicit open brace after the where keyword indicates that the programmer has opted to use explicit semi-colons to separate declarations, and that the declaration-list will be terminated by an explicit closing brace. One reason for wanting support for explicit delimiters is that it makes automatic generation of Haskell source code easier.
+Haskell's layout rule has been criticised for its complexity. In particular, the definition states that if the parser encounters a parse error during processing of a layout section, then it should try inserting a close brace (the "parse error" rule). Implementing this rule in a traditional parsing/lexical-analysis combination requires two-way cooperation between the parser and lexical analyser, whereas in most languages these two phases can be considered independently.
+[edit]The rest of the syntax
+Functions, currying, application, abstraction
+Operators
+Namespaces
+Declarations vs Expressions
+List comprehensions
+[edit]Algebraic data types
+	This section requires expansion.
+Algebraic data types are used extensively in Haskell. Some examples of these are the built in list, Maybe and Either types:
+-- A list of a's ([a]) is either an a consed (:) onto another list of a's, or an empty list ([])
+data [a] = a : [a] | []
+-- Something of type Maybe a is either Just something, or Nothing
+data Maybe a = Just a | Nothing
+-- Something of type Either atype btype is either a Left atype, or a Right btype
+data Either a b = Left a | Right b
+Users of the language can also define their own abstract data types. An example of an ADT used to represent a person's name, sex and age might look like:
+data Sex = Male | Female
+data Person = Person String Sex Int -- Notice that Person is both a constructor and a type
+ 
+-- An example of creating something of type Person
+tom :: Person
+tom = Person "Tom" Male 27
+[edit]Pattern matching
+Pattern matching is used to match on the different constructors of algebraic data types. Here are some functions, each using pattern matching on each of the types above:
+-- This type signature says that empty takes a list containing any type, and returns a Bool
+empty :: [a] -> Bool
+empty (x:xs) = False
+empty [] = True
+ 
+-- Will return a value from a Maybe a, given a default value in case a Nothing is encountered
+fromMaybe :: a -> Maybe a -> a
+fromMaybe x (Just y) = y
+fromMaybe x Nothing  = x
+ 
+isRight :: Either a b -> Bool
+isRight (Right _) = True
+isRight (Left _)  = False
+ 
+getName :: Person -> String
+getName (Person name _ _) = name
+ 
+getSex :: Person -> Sex
+getSex (Person _ sex _) = sex
+ 
+getAge :: Person -> Int
+getAge (Person _ _ age) = age
+Using the above functions, along with the map function, we can apply them to each element of a list, to see their results:
+map empty [[1,2,3],[],[2],[1..]]
+-- returns [False,True,False,False]
+ 
+map (fromMaybe 0) [Just 2,Nothing,Just 109238, Nothing]
+-- returns [2,0,109238,0]
+ 
+map isRight [Left "hello", Right 6, Right 23, Left "world"]
+-- returns [False, True, True, False]
+ 
+map getName [Person "Sarah" Female 20, Person "Alex" Male 20, tom]
+-- returns ["Sarah", "Alex", "Tom"], using the definition for tom above
+Abstract Types
+Lists
+[edit]Tuples
+Tuples in haskell can be used to hold a fixed number of elements. They are used to group pieces of data of differing types:
+account :: (String, Integer, Double) -- The type of a three-tuple, representing a name, balance, interest rate
+account = ("John Smith",102894,5.25)
+Tuples are commonly used in the zip* functions to place adjacent elements in separate lists together in tuples (zip4 to zip7 are provided in the Data.List module):
+-- The definition of the zip function. Other zip* functions are defined similarly
+zip :: [a] -> [b] -> [(a,b)]
+zip (a:as) (b:bs) = (a,b) : zip as bs
+zip _      _      = []
+ 
+zip [1..5] "hello"
+-- returns [(1,'h'),(2,'e'),(3,'l'),(4,'l'),(5,'o')]
+-- and has type [(Integer, Char)]
+ 
+zip3 [1..5] "hello" [False, True, False, False, True]
+-- returns [(1,'h',False),(2,'e',True),(3,'l',False),(4,'l',False),(5,'o',True)]
+-- and has type [(Integer,Char,Bool)]
+In the GHC compiler, tuples are defined with sizes from 2 elements up to 62 elements.
+Records
