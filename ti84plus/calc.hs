@@ -60,8 +60,8 @@ encodeAll n s = map fromIntegral $ concat [map C.ord "**TI83F*",[0x1a,0x0a],repl
 --Make a file name suitable to be a program name
 adjustName :: String -> String
 adjustName s = map C.toUpper . take 8 . filter C.isAlphaNum .
-	dropWhile (not . C.isAlpha) . takeWhile (/='.') . flip drop s . last .
-	L.findIndices (`elem` "\\/") $ s
+	dropWhile (not . C.isAlpha) . takeWhile (/='.') . flip drop s .
+	(\x -> if null x then 0 else last x) . L.findIndices (`elem` "\\/") $ s
 	
 main = do
 	args <- getArgs
