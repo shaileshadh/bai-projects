@@ -1,0 +1,2 @@
+run:
+	javac usrbincrash.java

@@ -1,0 +1,2 @@
+run:
+	javac breathalyzer.java
