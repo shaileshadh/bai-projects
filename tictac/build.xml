@@ -1,0 +1,7 @@
+<project default="compile">
+
+	<target name="compile">
+		<javac srcdir="." destdir="./build" debug="true" debuglevel="lines,vars,source"/>
+	</target>
+
+</project>
