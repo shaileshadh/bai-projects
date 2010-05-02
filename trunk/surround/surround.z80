@@ -1,0 +1,829 @@
+
+;are we compiling for Asm( or Mirage?
+;#define MIRAGE
+
+#define bcall(x) rst 28h \ .dw x
+
+;methods to facilitate drawing
+#define draw_sprite(x,y,spr) ld ix, spr \ ld d, x \ ld e, y \ call drawSprite
+#define draw_v_line(x,y,len) ld h, x \ ld l, y \ ld a, len \ ld c, 0 \ call drawline
+#define draw_h_line(x,y,len) ld h, x \ ld l, y \ ld a, len \ ld c, 1 \ call drawline
+#define draw_str(x,y,str) ld a, x \ ld ($86d7), a \ ld a, y \ ld ($86d8), a \ ld hl, str \ rst 28h \ .dw $4561
+
+fastcopy = $486a
+clearbuffer = $4bd0
+getcsc = $4018
+sram = $9872
+gbuf = $9340
+exit = $4027
+
+kdown = 1
+kleft = 2
+kright = 3
+kup = 4
+kclear = 15
+k2nd = 54
+
+;The board is stored here, and takes up 81 bytes of memory (9x9, 1 byte per grid).
+;The memory is arranged in 9 chunks, each with 9 bytes. A byte can either be 0 (empty),
+;1(black), or 2(white).
+board = sram
+
+;The location of the cursor, with (0,0) being the top left corner. The player moves the
+;cursor by one each time an arrow key is pressed.
+cursor_x = sram + 81
+cursor_y = sram + 82
+
+;whose turn is it? black: 1, white: 2.
+;by default, black goes first.
+;Notice that this corresponds to board colors; this is so that you can load pturn
+;directly into the board.
+pturn = sram + 83
+
+.org $9d93
+	.db $bb, $6d
+
+	;mirage header.
+	;don't care about image because most people use the
+	;alternative skin anyways.
+#ifdef MIRAGE
+	ret
+	.db 1
+	.fill 30, 0
+	.db "SURROUND 0.1", 0
+#endif
+
+	;runindicoff
+	bcall($4570)
+
+	;The initialization routines.
+	;Initialize the board to all zeroes.
+
+	ld b, 81
+	ld hl, board
+
+initboard_loop:
+	;put 0: empty.
+	xor a
+	ld (hl), a
+	;continue.
+	inc hl
+	djnz initboard_loop
+
+	;clear the board of anything remaining before program starts
+	bcall(clearbuffer)
+
+	;on a 9x9 board, center should be (5,5). (4,4) because it's 0-index.
+	ld a, 4
+	ld (cursor_x), a
+	ld (cursor_y), a
+
+	;set player turn.
+	ld a, 1
+	ld (pturn), a
+	call draw_entire_board
+	jp mainloop
+
+	;Although this is used only once, at startup, we might still have the possibility
+	;of needing to redraw the board later. So this is a subroutine that returns.
+draw_entire_board:
+	;Lines are 1px wide, 6px apart. Top left is (14,8).
+	;draw vertical lines.
+	ld h, 14
+	ld l, 8
+
+	;counter
+	ld b, 9
+
+initboard_v_loop:
+	push hl
+	push bc
+	
+	;0: vertical
+	ld c, 0
+	;49 px: 6*8 + 1
+	ld a, 49
+	call drawline
+
+	pop bc
+	pop hl
+
+	;means: add h,6
+	ld a, 6
+	add a, h
+	ld h, a
+	djnz initboard_v_loop
+
+	;do something similar with horizontal lines.
+	ld h, 14
+	ld b, 9
+
+initboard_h_loop:
+	push hl
+	push bc
+
+	;1:horizontal
+	ld c, 1
+	ld a, 49
+	call drawline
+
+	pop bc
+	pop hl
+
+	;not add l,6
+	ld a, 6
+	add a, l
+	ld l, a
+	djnz initboard_h_loop
+
+	;draw a border, which is just one extra line around the four edges.
+
+	;top: from (13,6)
+	draw_h_line(13, 6, 51)
+
+	;bottom: from (13,58)
+	draw_h_line(13, 58, 51)
+
+	;to fill in the corners, make these 2px more.
+
+	;left: from (12,6)
+	draw_v_line(12, 6, 53)
+
+	;right: from (64,6)
+	draw_v_line(64, 6, 53)
+
+	;draw indicators for whose turn is it.
+	draw_sprite(70, 24, sp_blackstone)
+	draw_sprite(70, 37, sp_whitestone)
+
+	;(67,24) and (67,37).
+	draw_sprite(67, 24, sp_playind)
+
+	;draw on graph buffer instead of screen
+	set 7, (iy+20)
+	draw_str(78, 23, str_human)
+	draw_str(78, 36, str_comp)
+
+	;there's nothing on the screen until you draw the board.
+	call drawboard
+	bcall(fastcopy)
+	ret
+
+	
+	;now begin the input loop.
+mainloop:
+
+	;handle keys.
+	bcall(getcsc)
+
+	cp kdown
+	jr z, k_down
+
+	cp kleft
+	jr z, k_left
+
+	cp kright
+	jr z, k_right
+
+	cp kup
+	jr z, k_up
+
+	cp k2nd
+	jr z, k_2nd
+
+	cp kclear
+	;handle this differently in mirage.
+#IFDEF MIRAGE
+	ret z
+#ELSE
+	call z, k_clear
+#ENDIF
+
+;return here.
+mainloop_continue:
+
+	jr mainloop
+
+	;ret
+
+
+;key handling routines. Here you have to check the bounds
+;and adjust the cursor as needed.
+;we keep the old position (before change) in the stack. depending
+;on whether we want to change the X or the Y positions, one or the
+;other is loaded first.
+k_down:
+	ld a, (cursor_x)
+	ld b, a
+	ld a, (cursor_y)
+	ld c, a
+	push bc
+	;not if a>=8
+	cp 8
+	;k_arrow is same as skipping.
+	jp nc, k_arrow
+	inc a
+	ld (cursor_y), a
+	jp k_arrow
+
+k_left:
+	ld a, (cursor_y)
+	ld c, a
+	ld a, (cursor_x)
+	ld b, a
+	push bc
+	;only if a!=0, otherwise it will overflow.
+	or a
+	jp z, k_arrow
+	dec a
+	ld (cursor_x), a
+	jp k_arrow
+
+k_right:
+	ld a, (cursor_y)
+	ld c, a
+	ld a, (cursor_x)
+	ld b, a
+	push bc
+	;not if a>=8
+	cp 8
+	jp nc, k_arrow
+	inc a
+	ld (cursor_x), a
+	jp k_arrow
+
+k_up:
+	ld a, (cursor_x)
+	ld b, a
+	ld a, (cursor_y)
+	ld c, a
+	push bc
+	;only if a!=0
+	or a
+	jp z, k_arrow
+	dec a
+	ld (cursor_y), a
+	jp k_arrow
+
+
+k_2nd:
+
+	;position is (board+(9*y+x))
+	ld a, (cursor_y)
+	;*9
+	ld b, a
+	add a, a
+	add a, a
+	add a, a
+	add a, b
+	ld b, a
+	;+x
+	ld a, (cursor_x)
+	add a, b
+	;add a to hl (board)
+	ld hl, board
+	ld d, 0
+	ld e, a
+	add hl, de
+	push hl
+	
+	ld a, (hl)
+	;if there's already a stone there, don't do anything.
+	;don't even need to switch player turns.
+	or a
+	jr nz, k_2nd_skip_putstone
+
+	;pturn also coincidentally matches the stone color.
+	ld a, (pturn)
+	ld (hl), a
+
+	;flip pturn.
+	ld b, a
+	ld a, 3
+	sub b
+	ld (pturn), a
+
+	;must move this here because we don't want the player to switch
+	;when an illegal move is made.
+	draw_sprite(67, 24, sp_playind)
+	draw_sprite(67, 37, sp_playind)
+
+	;draw this stone, don't draw the entire board.
+	pop ix
+	ld a, (cursor_y)
+	ld b, a
+	ld a, (cursor_x)
+	ld c, a
+	call drawboard_sub
+
+	;test if anything has been surrounded. this can only happen
+	;after someone has played a move.
+	ld a, (cursor_x)
+	ld b, a
+	ld a, (cursor_y)
+	ld c, a
+	;here
+	call testCapture
+	;up
+	dec c
+	call testCapture
+	;down
+	inc c
+	inc c
+	call testCapture
+	;left
+	dec c
+	dec b
+	call testCapture
+	;right
+	inc b
+	inc b
+	call testCapture
+
+
+k_2nd_skip_putstone:
+	;draw cursor here as well.
+	call drawCursor_loadbc
+	bcall(fastcopy)
+
+	jp mainloop_continue
+
+
+k_clear:
+	;exit
+	bcall(exit)
+
+
+;called when arrow keys pressed but not otherwise.
+;we used to always draw the entire board no matter what, but
+;with more stones this became really slow. because the arrow
+;keys are the most pressed, this should speed it up quite a bit.
+;the cursor is not XORed so it would be easier to erase.
+k_arrow:
+
+	;here we erase the old cursor and put the new cursor.
+	;the old cursor is on the stack at bc.
+	;erase it.
+	pop bc
+	call drawCursor
+
+	;now draw the new cursor.
+	call drawCursor_loadbc
+
+	bcall(fastcopy)
+
+	jp mainloop_continue
+
+
+;this is called when you want to redraw all of the stones.
+;if you just want to redraw a single stone, you should call
+;drawboard_sub.
+drawboard:
+	;now we draw all the stones.
+	;the outer (Y) counter is B, and the inner (X) counter is C. The position to draw a stone at (b,c)
+	;is (14+6c-2,8+6b-2) or (6c+12,6b+6). Both counters loop from 0 up to 8.
+	ld ix, board
+	ld b, 0
+
+drawboard_stonesloop1:
+
+	ld c, 0
+drawboard_stonesloop2:
+
+	;now in innermost loop.
+	push bc
+	push ix
+	call drawboard_sub
+
+drawboard_stones_cont:
+
+	;increment loop pointer.
+	pop ix
+	inc ix
+
+	pop bc
+	inc c
+	;loop if 8 or less.
+	ld a, 8
+	cp c
+	jr nc, drawboard_stonesloop2
+
+	inc b
+	;loop if it's 8 or less.
+	ld a, 8
+	cp b
+	jr nc, drawboard_stonesloop1
+
+
+	;board is done, now draw cursor.
+	;jump here if you're using the default x and y values for bc.
+drawCursor_loadbc:
+	ld a, (cursor_x)
+	ld b, a
+	ld a, (cursor_y)
+	ld c, a
+
+
+;hell, this is used in 2 places.
+;used as a subroutine as well as a jump.
+;position of (cursor_x,cursor_y) at (b,c).
+drawCursor:
+	push bc
+
+	ld a, b
+	;a*6
+	add a, a
+	add a, b
+	add a, a
+	;+14
+	add a, 14
+	ld h, a
+
+	pop bc
+	ld a, c
+	add a, a
+	add a, c
+	add a, a
+	;+8 this time.
+	add a, 8
+	ld l, a
+
+	;sprite is drawn from (x-1,y-1).
+	dec h
+	dec l
+	ld d, h
+	ld e, l
+	ld ix, sp_cursor
+	call drawSprite
+
+	ret
+
+
+
+;this is used twice so let's turn this into a subroutine.
+;cursor x and y in (c,b), state of stone in ix.
+drawboard_sub:
+	;6b+2
+	ld a, c
+	add a, a
+	add a, c
+	add a, a
+	add a, 12
+	ld d, a
+	;6c+6
+	ld a, b
+	add a, a
+	add a, b
+	add a, a
+	add a, 6
+	ld e, a
+
+	;state of current stone. positions are in (d,e) now.
+	ld a, (ix)
+
+	cp 2
+	jr z, drawboard_stones_white
+	;instead of cp 1
+	dec a
+	jr z, drawboard_stones_black
+	;if it's not 1 or 2, don't draw anything.
+	ret
+
+drawboard_stones_black:
+	ld ix, sp_blackstone
+	call drawSprite
+	ret
+
+drawboard_stones_white:
+	ld ix, sp_whitestone
+	call drawSprite
+	ret
+
+
+;tests surround for stone at (b,c).
+testCapture:
+	;needs to test for bounds first.
+	;valid bounds have 0 <= b,c <= 7. return if out of bounds.
+	;also because any value less than 0 overflows to 255, it's essentially
+	;the same as checking for the upper bound.
+	ld a, b
+	cp 8
+	ret nc
+	ld a, c
+	cp 8
+	ret nc
+
+	;todo
+
+	ret
+
+
+
+;Dumb and not very efficient sprite routine but I wanted it
+;to support transparency and flipping. Data is stored not
+;in bits nor in bytes, but in halfbytes (big endian).
+;Sprites start with 2 bytes indicating width and length.
+;the next (wid*len)/2 bytes are the individual pixels.
+
+;A halfbyte is:
+;0: transparent (don't touch this pixel)
+;1: empty (turn off this pixel)
+;2: filled (turn on this pixel)
+;3: flip (if it's on, turn it off, or if it's off, turn it on)
+
+;Inputs are:
+;IX - pointer to sprite
+;(d,e) - X and Y position of sprite
+drawSprite:
+
+	;get width and height
+	ld b, (ix)
+	inc ix
+	ld c, (ix)
+	inc ix
+
+	push de
+	push bc
+
+	;b is the outer loop counter.
+	ld b, 0
+
+drawsp_loop1:
+
+	;c is the inner loop counter.
+	ld c, 0
+
+drawsp_loop2:
+
+	;get bytes located at stack+2 then put back stack+1
+	pop hl
+	pop de
+	push hl
+
+	;get offsets and store in HL.
+	ld a, d
+	add a, c
+	ld h, a
+	ld a, e
+	add a, b
+	ld l, a
+
+	push bc
+	push de
+
+	;handle halfbytes.
+	ld a, (drawsp_storage)
+	or a
+	;current sprite pixel.
+	ld a, (ix)
+	jr nz, drawsp_sechalf
+	;first half.
+	and %11110000
+	rrca
+	rrca
+	rrca
+	rrca
+	push af
+	;flip the halfbyte flag.
+	ld a, (drawsp_storage)
+	inc a
+	ld (drawsp_storage), a
+	jr drawsp_half_cont
+	
+drawsp_sechalf:
+	;don't need to shift.
+	and %00001111
+	push af
+	;flip the halfbyte.
+	ld a, (drawsp_storage)
+	dec a
+	ld (drawsp_storage), a
+	;increment here because we're completely done this byte.
+	inc ix
+
+drawsp_half_cont:
+
+	pop af
+
+	;now we change the current pixel.
+	;what happens next depends on the value of A.
+	cp 3
+	jr z, drawsp_xor
+	cp 2
+	jr z, drawsp_turnon
+	;instead of cp 1
+	dec a
+	jr z, drawsp_turnoff
+	;anything else, don't touch this pixel.
+	jr drawsp_cont
+
+drawsp_turnon:
+	call getPixel
+	ld b, (hl)
+	;turn on the 1-bit
+	or b
+	ld (hl), a
+	jr drawsp_cont
+
+drawsp_turnoff:
+	call getPixel
+	ld b, (hl)
+	;turn off the 1-bit
+	cpl
+	and b
+	ld (hl), a
+	jr drawsp_cont
+
+drawsp_xor:
+	call getPixel
+	ld b, (hl)
+	;xor the 1-bit
+	xor b
+	ld (hl), a
+	;no need for explicit jr here.
+
+	;continue the loop.
+drawsp_cont:
+
+	;restore the stack. this is a bit complicated to visualize.
+	pop de
+	pop bc
+	pop hl
+	push de
+	push hl
+	
+	;compare inner counter with width,
+	;loop if c < width(d) after increment.
+	inc c
+	pop de
+	push de
+	dec d
+	ld a, d
+	cp c
+	jr nc, drawsp_loop2
+
+	;compare counter with height.
+	;loop if b < height (after increment).
+	inc b
+	;retrieve e (height)
+	pop de
+	push de
+	dec e
+	ld a, e
+	cp b
+	jr nc, drawsp_loop1
+
+	;set this back to 0.
+	xor a
+	ld (drawsp_storage), a
+
+	;restore stack and exit.
+	pop ix
+	pop ix
+	ret
+
+;space to store the half-bit flag because there just aren't
+;enough registers.
+drawsp_storage:
+	.db 0
+
+
+;returns the address of the pixel we want at (h,l).
+;the result is stored as a pointer in hl. also the bitmask is stored in A.
+;Input: Xpos=H, Ypos=L
+getPixel:
+	push hl
+
+	;first do the Y coordinates.
+	;we need to first expand it into 16 bit register de because 768 is
+	;too big for a 8-bit register.
+	ld h, 0
+	;(ld l, l)
+	;copy to de
+	ld d, h
+	ld e, l
+
+	;since each row is 12 bytes, multiply the Y coordinate by 12.
+	add hl, hl
+	add hl, de
+	add hl, hl
+	add hl, hl
+
+	;we have the row position in hl, now we have to add the X position.
+	;popping into de, the X-position should be in D. save it in A, we need it later.
+	;since each byte is 8 pixels, we want to divide it by 8.
+	pop de
+	ld a, d
+	ld e, d
+	ld d, 0
+	srl e
+	srl e
+	srl e
+
+	;add the column data to the base, and the relative position to the buffer.
+	add hl, de
+	ld bc, gbuf
+	add hl, bc
+
+	;to get the bit (not byte), we need to mod the byte by 8 (which is easy):
+	and 7
+
+	;what we want is a bitmask: for example 5 would be %00000100.
+	ld b, a
+	ld a, %10000000
+
+	;loop rrca.
+getPixel_loop:
+	rrca
+	djnz getPixel_loop
+
+	ret
+
+
+;routine to draw a line.
+;The top of the line is at position (h,l) and A contains how many pixels
+;we want to draw; the direction is stored in C: 0 for vertical and 1 for horizontal.
+drawline:
+
+	;this should be fairly simple: just loop getPixel a few times.
+	;also increment the Y coordinate every time while decreasing B.
+	ld b, a
+
+drawline_loop:
+
+	push bc
+	push hl
+
+	;draw this pixel. we don't want to turn off the already existing pixels
+	;either so we or it with the existing byte.
+	call getPixel
+	ld b, (hl)
+	or b
+	ld (hl), a
+
+	pop hl
+	pop bc
+
+	;here's the difference between the horizontal and vertical lines: for vertical lines
+	;you increase L but for horizontal lines you increase H.
+	ld a, c
+	or a
+
+	;clumsy if statement.
+	jr nz, drawline_inc_h
+	inc l
+	jr drawline_done_inc
+drawline_inc_h:
+	inc h
+drawline_done_inc:
+
+	djnz drawline_loop
+
+	ret
+
+
+;3x3 cursor.
+;cursor sprite is not defined, but is xored as fit.
+
+;why do we choose this one to be xor?
+;because it's the most updated sprite, and instead of redrawing
+;the whole screen we can draw the cursor once at the old position
+;(erasing it) and draw it again at the new position, leaving the
+;rest untouched.
+sp_cursor:
+	.db 3,3
+	; 303
+	; 030
+	; 303(0)
+	.db $30, $30, $30, $30, $30
+
+;xor a line.
+sp_playind:
+	.db 1,5
+	.db $33, $33, $30
+
+sp_blackstone:
+	.db 5,5
+	; 02220
+	; 22222
+	; 22222
+	; 22222
+	; 02220(0)
+	;save 1 byte here because the first half of 5 is 0 anyways.
+	.db $02, $22, $02, $22, $22, $22, $22, $22, $22, $22, $02, $22;, $00
+
+sp_whitestone:
+	.db 5,5
+	; 22222
+	; 21112
+	; 21112
+	; 21112
+	; 22222(0)
+	.db $22, $22, $22, $11, $12, $21, $11, $22, $11, $12, $22, $22, $20
+
+str_human: .db "MAN", 0
+str_comp: .db "CPU", 0
+
+
+.end
+
