@@ -23,6 +23,9 @@ public class simonsays{
             // Retrieve color list
             List<Color> listColors = client.startTurn();
 
+            // Some debug information
+            System.out.println(listColors.size());
+
             // Play back colors list
             for(Color color : listColors){
                 client.chooseColor(color);
